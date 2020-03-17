@@ -24,7 +24,7 @@
   * Automatic datafile updates
   * Customizable event dispatcher props (max event batch size, flush interval)
 * Auto-creation of uuid. Option to generate any number of users.
-* Notification listener for notification type 'DECISION'. Option to remove it.
+* Notification listener for notification types 'DECISION' (with option to remove it) & 'CONFIG_UPDATE'.
 * Examples of all available client API calls.
 * Option to show the content of the Optimizely environment 'config'.
 * Termination of the Optimizely client before exiting the app.
