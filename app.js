@@ -9,7 +9,7 @@ const {v4: uuidv4 } = require('uuid');      // import a plugin for uuid creation
 optimizelySDK.setLogger(optimizelySDK.logging.createLogger());
 // optimizelySDK.setLogLevel('info');       // use to set the log level
 
-const sdkKey = 'HyxwR6PohJd4uKvqJZqazN'     // Provide the sdkKey of your desired environment here
+const sdkKey = '<SDK key>'     // Provide the sdkKey of your desired environment here
 
 // initialize Optimizely client instance using the datafile
 const optimizelyClientInstance = optimizelySDK.createInstance({
@@ -44,7 +44,7 @@ const attributes = {
 optimizelyClientInstance.onReady({ timeout: 3000 }).then((result) => {
     if (result.success === false) {
         console.log(`[CUSTOM LOG] Failed to initialize the client instance. Reason: ${result.reason}`);
-        return;
+        process.exit()      // exit the app
     } else {
         console.log(`[CUSTOM LOG] Datafile ready: ${result.success}`);
         
@@ -54,14 +54,19 @@ optimizelyClientInstance.onReady({ timeout: 3000 }).then((result) => {
             onDecision,
         );
 
-        // can be used for scenarios when in need of a lot of users
-        if(!!numberOfUsers) {
+        let printNotifications = false;      // if set to 'false', remove the above notification listener
+        if (!printNotifications) {
+            optimizelyClientInstance.notificationCenter.removeNotificationListener(notificationListernerOne); 
+        }
+
+        if(!!numberOfUsers) {   // can be used for scenarios when in need of a lot of users
             console.log(`[CUSTOM LOG] Detecting MANY users. Total number of users evaluated:\t ${numberOfUsers}`);
             let variation1 = 0;
             let variation2 = 0;
             let noVariation = 0;
 
             userIds.forEach((user) => {
+                // be mindful of using API calls that trigger impressions if using customers' SDK keys
                 let variationAssignment = optimizelyClientInstance.getVariation('<EXPERIMENT KEY>', user, attributes);
 
                 if (variationAssignment === '<VARIATION KEY>') {
@@ -75,20 +80,20 @@ optimizelyClientInstance.onReady({ timeout: 3000 }).then((result) => {
             console.log(`[CUSTOM LOG] Number of users bucketed in variation_1:\t\t ${variation1}`);
             console.log(`[CUSTOM LOG] Number of users bucketed in variation_2:\t\t ${variation2}`);
             console.log(`[CUSTOM LOG] Number of users not bucketed into variation:\t ${noVariation}`);
-        } else {
-            console.log(`[CUSTOM LOG] User ID:\t ${userId}`);     // if using a single uuid
+        } else {    // if using a single uuid
+            console.log(`[CUSTOM LOG] User ID:\t ${userId}`);     
             
             // examples of calling supported client APIs
             // evaluate experiments and/or feature rollouts
-            optimizelyClientInstance.getVariation('<EXPERIMENT KEY', userId, attributes);
-            optimizelyClientInstance.activate('<EXPERIMENT KEY', userId, attributes);
+            optimizelyClientInstance.getVariation('<EXPERIMENT KEY>', userId, attributes);
+            optimizelyClientInstance.activate('<EXPERIMENT KEY>', userId, attributes);
             optimizelyClientInstance.isFeatureEnabled('<FEATURE KEY>', userId, attributes);
             optimizelyClientInstance.getEnabledFeatures(userId, attributes);
-            optimizelyClientInstance.getFeatureVariable('<FEATURE KEY', userId, attributes) // only as of v3.3
+            optimizelyClientInstance.getFeatureVariable('<FEATURE KEY>', '<VARIABLE KEY>', userId, attributes) // only as of v3.3
 
             // set/get forced variation for given user
-            optimizelyClientInstance.setForcedVariation('<EXPERIMENT KEY', userId, '<VARIATION KEY');
-            optimizelyClientInstance.getForcedVariation('<EXPERIMENT KEY', userId);
+            optimizelyClientInstance.setForcedVariation('<EXPERIMENT KEY>', userId, '<VARIATION KEY');
+            optimizelyClientInstance.getForcedVariation('<EXPERIMENT KEY>', userId);
 
             // track an event
             optimizelyClientInstance.track('<EVENT KEY>', userId, attributes);
@@ -100,14 +105,17 @@ optimizelyClientInstance.onReady({ timeout: 3000 }).then((result) => {
     }
     
     // call the close method to flush any pending events before terminating the app
-    optimizelyClientInstance.close().then((result) => {
-        if (result.success === false) {
-            console.log(`[CUSTOM LOG] Failed to close the client instance. Reason: ${result.reason}`);
-        } else {
-            console.log(`[CUSTOM LOG] Safe to close the app: ${result.success}. Closing the app!`);
-            process.exit()      // exit the app
-        }
-    });
+    let autoClose = true;   // set to true/false based on whether or not you want the app to 'auto-exit'
+    if(!!autoClose) { 
+        optimizelyClientInstance.close().then((result) => {
+            if (result.success === false) {
+                console.log(`[CUSTOM LOG] Failed to close the client instance. Reason: ${result.reason}`);
+            } else {
+                console.log(`[CUSTOM LOG] Safe to close the app: ${result.success}. Closing the app!`);
+                process.exit()      // exit the app
+            }
+        });
+    }
 
     // callback fn to work with object provided by the 'DECISION' notification listener
     function onDecision(decisionObject) {
