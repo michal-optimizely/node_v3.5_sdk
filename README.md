@@ -2,7 +2,7 @@
 
 **To get up and running:**
 1. Clone the repo: `git clone https://github.com/michal-optimizely/node_v3.5_sdk.git`
-2. Enter the folder: `cd node_v3.5_sdk`
+2. Enter the new folder: `cd node_v3.5_sdk`
 3. Install dependencies: `npm install`
 4. Execute the app code: `node app.js`
 
