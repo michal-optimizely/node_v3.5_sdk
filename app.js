@@ -49,14 +49,14 @@ optimizelyClientInstance.onReady({ timeout: 3000 }).then((result) => {
         console.log(`[CUSTOM LOG] Datafile ready: ${result.success}`);
         
         // set up a 'DECISION' notification listener - fires when calling 'activate', 'isFeatureEnabled', 'getEnabledFeatures'
-        const notificationListernerOne = optimizelyClientInstance.notificationCenter.addNotificationListener(
+        const notificationListernerDecision = optimizelyClientInstance.notificationCenter.addNotificationListener(
             optimizelyEnums.NOTIFICATION_TYPES.DECISION,
             onDecision,
         );
 
         let printNotifications = false;      // if set to 'false', remove the above notification listener
         if (!printNotifications) {
-            optimizelyClientInstance.notificationCenter.removeNotificationListener(notificationListernerOne); 
+            optimizelyClientInstance.notificationCenter.removeNotificationListener(notificationListernerDecision); 
         }
 
         if(!!numberOfUsers) {   // can be used for scenarios when in need of a lot of users
@@ -101,6 +101,17 @@ optimizelyClientInstance.onReady({ timeout: 3000 }).then((result) => {
         
         let config = optimizelyClientInstance.getOptimizelyConfig();
         // console.log(config);     // log content of the datafile
+        
+        // set up a 'CONFIG_UPDATE' notification listener
+        const notificationListernerConfigUpdate = optimizelyClientInstance.notificationCenter.addNotificationListener(
+            optimizelyEnums.NOTIFICATION_TYPES.OPTIMIZELY_CONFIG_UPDATE,
+            onConfigUpdate,
+        );
+
+        // callback fn when OPTIMIZELY_CONFIG is updated
+        function onConfigUpdate(updatedConfig) {
+            console.log(updatedConfig);
+        }
 
     }
     
